@@ -14,6 +14,6 @@ This will start the API locally for your host.
 
 | Route                                    | Method | Description                                                              |
 |------------------------------------------|--------|--------------------------------------------------------------------------|
-| /collect/<string:subreddit>              | POST   | Downloads the 100 first posts of given subreddit                         |
-| /feed/<string:subreddit>                 | GET    | Returns a list of previously downloaded medias files for given subreddit |
-| /medias/<string:subreddit>/<string:file> | GET    | Returns the media file                                                   |
+| /collect/<subreddit>              | POST   | Downloads the 100 first posts of given subreddit                         |
+| /feed/<subreddit>                 | GET    | Returns a list of previously downloaded medias files for given subreddit |
+| /medias/<subreddit>/<file> | GET    | Returns the media file                                                   |
