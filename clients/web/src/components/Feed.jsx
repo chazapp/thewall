@@ -1,36 +1,54 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
 import ReactLoading from 'react-loading';
 import Gallery from 'react-photo-gallery';
+
 const API_URL = 'http://192.168.1.15:8080'
 
-export default function Feed(props) {
-  const { query } = props;
+const Feed = (props) => {
+  let { query } = props;
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
   const [data, setData] = React.useState([]);
 
-  React.useEffect(() => {
+  let imgCount = 0;
+  let limit = useRef(25);
+  let offset = useRef(0);
+  let photos = useRef([])
+  const nsfw = "false";
+  query = "";
+  const loadPhotos = () => {
     setLoading(true);
-    fetch(`${API_URL}/feed/${query !== "" ? query : "pics"}`)
+    const request = `${API_URL}/feed${query !== '' ? '/' + query : ''}?nsfw=${nsfw}&limit=${limit.current}&offset=${offset.current}`
+    fetch(request)
       .then((response) => response.json())
       .then((data) => {
         const { feed } = data;
         setLoading(false);
-        let photos= [];
-        feed.forEach((link) => {
-          photos.push({
-            src: link,
-            width: 1,
-            height: 1
-          })
+        feed.forEach((media) => {
+          const { content, post_url} = media;
+            photos.current.push({
+              src: content,
+              width: 1,
+              height: 1,
+              post_url: post_url,
+            });
+          imgCount++;
         })
-        setData(photos);
+        offset.current = limit;
+        limit.current += 25;
+        setData(photos.current);
       })
       .catch((e) => {
         setLoading(false);
         setError('fetch failed');
       });
+  }
+  useEffect(loadPhotos, [imgCount, query, limit, offset]);
+
+  const openPost = useCallback((event, { photo, index }) => {
+    const { post_url } = photo;
+    window.location.href= post_url;
   }, []);
 
   if (loading) {
@@ -47,33 +65,11 @@ export default function Feed(props) {
   } else {
     return (
       <React.Fragment>
-        <Gallery photos={data} />
+        <Gallery photos={data} direction={"column"} onClick={openPost} />
       </React.Fragment>
     );
   }
 };
 
 
-     // data.map((element, index) => {
-        //     if (element.split('.').pop() === 'mp4') {
-        //         return (
-        //             <ReactPlayer 
-        //             url={element} 
-        //             playing={true} 
-        //             loop={true}
-        //             muted={true}
-        //             pip={false}
-        //             key={index}
-        //             />
-        //         )
-        //     } else {
-        //         return (
-        //             <img src={element} alt='foo' style={{
-        //                 width: '10%',
-        //                 height: '20%',
-        //             }}
-        //             key={index}
-        //             />
-        //         )
-        //     }
-        // })
+export default Feed;
